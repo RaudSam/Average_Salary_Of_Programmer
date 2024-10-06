@@ -21,13 +21,13 @@ def get_hh_vacancies(language):
         params['page'] = page
         response = requests.get(vacancies_url, params=params)
         response.raise_for_status()
-        vacancy_data = response.json()
-        all_vacancies.extend(vacancy_data['items'])
-        if page >= vacancy_data['pages'] - 1:
+        vacancy_descriptions = response.json()
+        all_vacancies.extend(vacancy_descriptions['items'])
+        if page >= vacancy_descriptions['pages'] - 1:
             break
         page += 1
     
-    return all_vacancies, vacancy_data['found']
+    return all_vacancies, vacancy_stats['found']
 
 
 def predict_salary(payment_from, payment_to):
@@ -48,7 +48,7 @@ def predict_rub_salary(salary):
     return predicted_salary
 
 
-def hh_programmer_salary_data(languages):
+def get_hh_programmer_salary(languages):
     hh_vacancies_salaries = {}
     for language in languages:
         vacancies, total_vacancies = get_hh_vacancies(language)
@@ -101,7 +101,7 @@ def get_sj_vacancies(language, api_key):
     return all_vacancies, vacancy_descriptions['total']
 
 
-def sj_programmer_salary_data(languages, api_key):
+def get_sj_programmer_salary(languages, api_key):
     sj_vacancies_salaries = {}
     for language in languages:
         vacancies, total_vacancies = get_sj_vacancies(language, api_key)
@@ -122,7 +122,7 @@ def sj_programmer_salary_data(languages, api_key):
     return sj_vacancies_salaries
 
 
-def table_data(vacancy_descriptions, title):
+def create_statistic_table(vacancy_descriptions, title):
     table_data = [['Язык программирования', 'Вакансий найдено','Вакансий обработано', 'Средняя зарплата']]
     for language, stats in vacancy_descriptions.items():
         table_data.append([
@@ -142,11 +142,11 @@ def main():
     load_dotenv()
     api_key = os.getenv('SJ_API_KEY')
 
-    hh_programmer_salary_stat = hh_programmer_salary_data(languages)
-    sj_programmer_salary_stat = sj_programmer_salary_data(languages, api_key)
+    hh_programmer_salary_stat = get_hh_programmer_salary(languages)
+    sj_programmer_salary_stat = get_sj_programmer_salary(languages, api_key)
     
-    table_data(hh_programmer_salary_stat, 'SuperJob Moscow')
-    table_data(sj_programmer_salary_stat, 'HeadHunter Moscow')
+    create_statistic_table(hh_programmer_salary_stat, 'SuperJob Moscow')
+    create_statistic_table(sj_programmer_salary_stat, 'HeadHunter Moscow')
 
 
 if __name__ == '__main__':
